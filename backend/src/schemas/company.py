@@ -15,6 +15,8 @@ class Company(BaseModel):
     created_at: Optional[datetime] = None
     mca_category: Optional[str] = None
     division_description: Optional[str] = None
+    dor: Optional[str] = None
+    contacted: Optional[bool] = None
 
 class CompanyDetail(BaseModel):
     cin: str

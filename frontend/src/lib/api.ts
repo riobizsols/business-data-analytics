@@ -38,6 +38,8 @@ export type Company = {
   created_at?: string;
   mca_category?: string;
   division_description?: string;
+  dor?: string;
+  contacted?: boolean;
 };
 
 export type Director = {

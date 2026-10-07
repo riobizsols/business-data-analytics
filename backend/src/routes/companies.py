@@ -92,8 +92,8 @@ def list_companies(
         where_clauses.append(f"{NORMALIZE_STATE_SQL} = :norm_state")
         params["norm_state"] = (_normalize_state_py(state) or state).lower().replace("&", "and").strip()
     if city:
-        where_clauses.append("c.city = :city")
-        params["city"] = city
+        where_clauses.append("c.city ILIKE :city")
+        params["city"] = f"%{city.strip()}%"
     if activity_code:
         where_clauses.append("c.activity_code = :activity_code")
         params["activity_code"] = activity_code
@@ -136,7 +136,8 @@ def list_companies(
                 FROM director_det d WHERE d.cin = c.cin ORDER BY d.created_at DESC NULLS LAST LIMIT 1) AS phone,
                c.company_email, c.toc, c.created_at,
                COALESCE(m.mca_category, 'NA') as mca_category, 
-               COALESCE(m.division_description, 'NA') as division_description
+               COALESCE(m.division_description, 'NA') as division_description,
+               to_char(c.dor, 'YYYY-MM-DD') as dor, c.contacted
         FROM company_det c
         LEFT JOIN mca_codes m ON c.activity_code = m.activity_code
         {where_sql}
@@ -160,6 +161,8 @@ def list_companies(
             "created_at": r[9],
             "mca_category": r[10],
             "division_description": r[11],
+            "dor": r[12],
+            "contacted": r[13],
         }
         for r in rows
     ]

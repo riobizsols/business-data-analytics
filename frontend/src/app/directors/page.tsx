@@ -57,7 +57,7 @@ export default async function DirectorsPage({ searchParams }: { searchParams: Pr
   };
 
   return (
-    <main className="mx-auto max-w-6xl px-6 py-8">
+    <main className="mx-auto w-full max-w-[1800px] px-6 py-8">
       <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Directors</h1>
       {/* Sticky compact filter bar */}
       {active.length > 0 && (
@@ -123,25 +123,25 @@ export default async function DirectorsPage({ searchParams }: { searchParams: Pr
         <SaveViewClient currentFilters={{ q, designation, contacted, doj_from, doj_to }} />
       </div>
 
-      <div className="mt-6 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-        <table className="w-full text-left text-sm">
+      <div className="mt-6 overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+        <table className="w-full min-w-max text-left text-sm">
           <thead className="bg-gray-50 text-gray-600 dark:bg-neutral-800 dark:text-gray-300">
             <tr>
-              <th className="px-4 py-3">DIN</th>
-              <th className="px-4 py-3">Name</th>
-              <th className="px-4 py-3">Company</th>
-              <th className="px-4 py-3">City</th>
-              <th className="px-4 py-3">Date Joined</th>
-              <th className="px-4 py-3">Phone</th>
-              <th className="px-4 py-3">Email</th>
+              <th className="whitespace-nowrap px-4 py-3">DIN</th>
+              <th className="whitespace-nowrap px-4 py-3">Name</th>
+              <th className="whitespace-nowrap px-4 py-3">Company</th>
+              <th className="whitespace-nowrap px-4 py-3">City</th>
+              <th className="whitespace-nowrap px-4 py-3">Date Joined</th>
+              <th className="whitespace-nowrap px-4 py-3">Phone</th>
+              <th className="whitespace-nowrap px-4 py-3">Email</th>
             </tr>
           </thead>
           <tbody>
             {data.items.map((d) => (
               <tr key={d.din} className="border-t border-gray-100 hover:bg-gray-50 dark:border-neutral-800 dark:hover:bg-neutral-800/50">
-                <td className="px-4 py-3 font-mono text-xs text-indigo-600"><Link href={`/directors/${d.din}`}>{d.din}</Link></td>
-                <td className="px-4 py-3">{d.director_name}</td>
-                <td className="px-4 py-3">
+                <td className="whitespace-nowrap px-4 py-3 font-mono text-xs text-indigo-600"><Link href={`/directors/${d.din}`}>{d.din}</Link></td>
+                <td className="whitespace-nowrap px-4 py-3">{d.director_name}</td>
+                <td className="whitespace-nowrap px-4 py-3">
                   {d.cin ? (
                     <Link href={`/companies/${d.cin}`} className="text-indigo-600 hover:underline">
                       {d.companyname}
@@ -150,10 +150,10 @@ export default async function DirectorsPage({ searchParams }: { searchParams: Pr
                     <span className="text-gray-400">—</span>
                   )}
                 </td>
-                <td className="px-4 py-3">{d.city || '—'}</td>
-                <td className="px-4 py-3">{d.date_joined}</td>
-                <td className="px-4 py-3">{d.phone}</td>
-                <td className="px-4 py-3">{d.email}</td>
+                <td className="whitespace-nowrap px-4 py-3">{d.city || '—'}</td>
+                <td className="whitespace-nowrap px-4 py-3">{d.date_joined}</td>
+                <td className="whitespace-nowrap px-4 py-3">{d.phone}</td>
+                <td className="whitespace-nowrap px-4 py-3">{d.email}</td>
               </tr>
             ))}
           </tbody>

@@ -8,6 +8,7 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Pr
   const sp = await searchParams;
   const q = (sp?.q as string) || "";
   const state = (sp?.state as string) || "";
+  const city = ((sp?.city as string) || "").trim();
   const mca_category = (sp?.mca_category as string) || "";
   const a_capital_min = (sp?.a_capital_min as string) || "";
   const a_capital_max = (sp?.a_capital_max as string) || "";
@@ -28,39 +29,40 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Pr
   const categoriesData = await apiGet<{categories: string[]}>("/api/companies/meta/categories");
   const categories = categoriesData.categories;
 
-  const qs = [
-    `limit=${limit}`,
-    `offset=${offset}`,
-    q && `q=${encodeURIComponent(q)}`,
-    state && `state=${encodeURIComponent(state)}`,
-    mca_category && `mca_category=${encodeURIComponent(mca_category)}`,
-    a_capital_min && `a_capital_min=${encodeURIComponent(a_capital_min)}`,
-    a_capital_max && `a_capital_max=${encodeURIComponent(a_capital_max)}`,
-    p_capital_min && `p_capital_min=${encodeURIComponent(p_capital_min)}`,
-    p_capital_max && `p_capital_max=${encodeURIComponent(p_capital_max)}`,
-    dor_from && `dor_from=${encodeURIComponent(dor_from)}`,
-    dor_to && `dor_to=${encodeURIComponent(dor_to)}`,
-    contacted && `contacted=${encodeURIComponent(contacted)}`,
-  ].filter(Boolean).join("&");
+  const filters: Array<[string, string]> = [
+    ["q", q],
+    ["state", state],
+    ["city", city],
+    ["mca_category", mca_category],
+    ["a_capital_min", a_capital_min],
+    ["a_capital_max", a_capital_max],
+    ["p_capital_min", p_capital_min],
+    ["p_capital_max", p_capital_max],
+    ["dor_from", dor_from],
+    ["dor_to", dor_to],
+    ["contacted", contacted],
+  ];
 
-  const data = await apiGet<Page<Company>>(`/api/companies?${qs}`);
+  const filterQuery = (excludeKey?: string) =>
+    filters
+      .filter(([k, v]) => k !== excludeKey && v)
+      .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+      .join("&");
 
-  const active: Array<[string, string]> = [];
-  if (q) active.push(["q", q]);
-  if (state) active.push(["state", state]);
-  if (mca_category) active.push(["mca_category", mca_category]);
-  if (a_capital_min) active.push(["a_capital_min", a_capital_min]);
-  if (a_capital_max) active.push(["a_capital_max", a_capital_max]);
-  if (p_capital_min) active.push(["p_capital_min", p_capital_min]);
-  if (p_capital_max) active.push(["p_capital_max", p_capital_max]);
-  if (dor_from) active.push(["dor_from", dor_from]);
-  if (dor_to) active.push(["dor_to", dor_to]);
-  if (contacted) active.push(["contacted", contacted]);
+  const withFilters = (base: string, extra?: string) => {
+    const parts = [extra, filterQuery()].filter(Boolean).join("&");
+    return `${base}${parts ? `?${parts}` : ""}`;
+  };
+
+  const data = await apiGet<Page<Company>>(withFilters("/api/companies", `limit=${limit}&offset=${offset}`));
+
+  const active = filters.filter(([, v]) => v);
 
   const prettyLabel = (k: string) => {
     switch (k) {
       case "q": return "Query";
       case "state": return "State";
+      case "city": return "City";
       case "mca_category": return "Category";
       case "a_capital_min": return "Auth Cap ≥";
       case "a_capital_max": return "Auth Cap ≤";
@@ -79,27 +81,15 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Pr
   };
 
   const buildUrlExcluding = (excludeKey: string) => {
-    const pairs = [
-      ["q", q],
-      ["state", state],
-      ["mca_category", mca_category],
-      ["a_capital_min", a_capital_min],
-      ["a_capital_max", a_capital_max],
-      ["p_capital_min", p_capital_min],
-      ["p_capital_max", p_capital_max],
-      ["dor_from", dor_from],
-      ["dor_to", dor_to],
-      ["contacted", contacted],
-    ] as Array<[string, string]>;
-    const qs2 = pairs
-      .filter(([k, v]) => k !== excludeKey && v)
-      .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
-      .join("&");
+    const qs2 = filterQuery(excludeKey);
     return `/companies${qs2 ? `?${qs2}` : ""}`;
   };
 
+  const th = "whitespace-nowrap px-4 py-3";
+  const td = "whitespace-nowrap px-4 py-3";
+
   return (
-    <main className="mx-auto max-w-6xl px-6 py-8">
+    <main className="mx-auto w-full max-w-[1800px] px-6 py-8">
       <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Companies</h1>
       {/* Sticky compact filter bar */}
       {active.length > 0 && (
@@ -151,6 +141,7 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Pr
               <span className="text-xs text-gray-500">{active.length} active</span>
             </summary>
             <div className="grid grid-cols-1 gap-2 overflow-hidden border-t p-3 pt-3 opacity-0 transition-all duration-300 ease-in-out max-h-0 group-open:max-h-[900px] group-open:opacity-100 dark:border-neutral-800 sm:grid-cols-2 lg:grid-cols-3">
+              <input name="city" defaultValue={city} placeholder="City (e.g. Mumbai)" title="Matches any city containing this text (case-insensitive)." className="rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-neutral-800 dark:bg-neutral-900 dark:text-white" />
               <select name="mca_category" defaultValue={mca_category} title="Filter by MCA category" className="rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-neutral-800 dark:bg-neutral-900 dark:text-white">
                 <option value="">All Categories</option>
                 {categories.map((cat) => (
@@ -177,39 +168,43 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Pr
             </div>
           </details>
         </form>
-        <SaveViewClient currentFilters={{ q, state, mca_category, a_capital_min, a_capital_max, p_capital_min, p_capital_max, dor_from, dor_to, contacted }} />
+        <SaveViewClient currentFilters={{ q, state, city, mca_category, a_capital_min, a_capital_max, p_capital_min, p_capital_max, dor_from, dor_to, contacted }} />
       </div>
 
 
-      <div className="mt-6 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-        <table className="w-full text-left text-sm">
+      <div className="mt-6 overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+        <table className="w-full min-w-max text-left text-sm">
           <thead className="bg-gray-50 text-gray-600 dark:bg-neutral-800 dark:text-gray-300">
             <tr>
-              <th className="px-4 py-3">CIN</th>
-              <th className="px-4 py-3">Name</th>
-              <th className="px-4 py-3">City</th>
-              <th className="px-4 py-3">State</th>
-              <th className="px-4 py-3">Category</th>
-              <th className="px-4 py-3">Email</th>
-              <th className="px-4 py-3">Phone</th>
-              <th className="px-4 py-3 text-right">Auth Capital</th>
-              <th className="px-4 py-3 text-right">Paid Capital</th>
-              <th className="px-4 py-3 text-center">TOC</th>
+              <th className={th}>CIN</th>
+              <th className={th}>Name</th>
+              <th className={th}>City</th>
+              <th className={th}>State</th>
+              <th className={th}>Category</th>
+              <th className={th}>Email</th>
+              <th className={th}>Phone</th>
+              <th className={`${th} text-right`}>Auth Capital</th>
+              <th className={`${th} text-right`}>Paid Capital</th>
+              <th className={th}>Registered</th>
+              <th className={`${th} text-center`}>TOC</th>
+              <th className={`${th} text-center`}>Contacted</th>
             </tr>
           </thead>
           <tbody>
             {data.items.map((c) => (
               <tr key={c.cin} className="border-t border-gray-100 hover:bg-gray-50 dark:border-neutral-800 dark:hover:bg-neutral-800/50">
-                <td className="px-4 py-3 font-mono text-xs text-indigo-600"><Link title="View directors of this company" href={`/directors?q=${encodeURIComponent(c.cin)}`}>{c.cin}</Link></td>
-                <td className="px-4 py-3">{c.companyname}</td>
-                <td className="px-4 py-3">{c.city}</td>
-                <td className="px-4 py-3">{c.state}</td>
-                <td className="px-4 py-3" title={c.division_description || ''}>{c.mca_category || '—'}</td>
-                <td className="px-4 py-3">{c.company_email}</td>
-                <td className="px-4 py-3">{c.phone}</td>
-                <td className="px-4 py-3 text-right">{formatIndianCurrency(c.a_capital)}</td>
-                <td className="px-4 py-3 text-right">{formatIndianCurrency(c.p_capital)}</td>
-                <td className="px-4 py-3 text-center">{c.toc ?? '—'}</td>
+                <td className={`${td} font-mono text-xs text-indigo-600`}><Link title="View directors of this company" href={`/directors?q=${encodeURIComponent(c.cin)}`}>{c.cin}</Link></td>
+                <td className={td}>{c.companyname}</td>
+                <td className={td}>{c.city}</td>
+                <td className={td}>{c.state}</td>
+                <td className={td} title={c.division_description || ''}>{c.mca_category || '—'}</td>
+                <td className={td}>{c.company_email}</td>
+                <td className={td}>{c.phone}</td>
+                <td className={`${td} text-right`}>{formatIndianCurrency(c.a_capital)}</td>
+                <td className={`${td} text-right`}>{formatIndianCurrency(c.p_capital)}</td>
+                <td className={td}>{c.dor || '—'}</td>
+                <td className={`${td} text-center`}>{c.toc ?? '—'}</td>
+                <td className={`${td} text-center`}>{c.contacted ? 'Yes' : 'No'}</td>
               </tr>
             ))}
           </tbody>
@@ -218,18 +213,7 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Pr
 
       <div className="mt-3 flex gap-2 text-sm">
         <DownloadButton
-          path={`/api/export/companies.csv?${[
-            q && `q=${encodeURIComponent(q)}`,
-            state && `state=${encodeURIComponent(state)}`,
-            mca_category && `mca_category=${encodeURIComponent(mca_category)}`,
-            a_capital_min && `a_capital_min=${encodeURIComponent(a_capital_min)}`,
-            a_capital_max && `a_capital_max=${encodeURIComponent(a_capital_max)}`,
-            p_capital_min && `p_capital_min=${encodeURIComponent(p_capital_min)}`,
-            p_capital_max && `p_capital_max=${encodeURIComponent(p_capital_max)}`,
-            dor_from && `dor_from=${encodeURIComponent(dor_from)}`,
-            dor_to && `dor_to=${encodeURIComponent(dor_to)}`,
-            contacted && `contacted=${encodeURIComponent(contacted)}`,
-          ].filter(Boolean).join("&")}`}
+          path={withFilters("/api/export/companies.csv")}
           filename="companies.csv"
           label="Export CSV"
         />
@@ -241,37 +225,13 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Pr
           {offset > 0 && (
             <Link
               className="rounded-md border px-3 py-1 hover:bg-gray-50 dark:border-neutral-800 dark:hover:bg-neutral-800"
-              href={`/companies?${[
-                `offset=${Math.max(offset - limit, 0)}`,
-                q && `q=${encodeURIComponent(q)}`,
-                state && `state=${encodeURIComponent(state)}`,
-                mca_category && `mca_category=${encodeURIComponent(mca_category)}`,
-                a_capital_min && `a_capital_min=${encodeURIComponent(a_capital_min)}`,
-                a_capital_max && `a_capital_max=${encodeURIComponent(a_capital_max)}`,
-                p_capital_min && `p_capital_min=${encodeURIComponent(p_capital_min)}`,
-                p_capital_max && `p_capital_max=${encodeURIComponent(p_capital_max)}`,
-                dor_from && `dor_from=${encodeURIComponent(dor_from)}`,
-                dor_to && `dor_to=${encodeURIComponent(dor_to)}`,
-                contacted && `contacted=${encodeURIComponent(contacted)}`,
-              ].filter(Boolean).join("&")}`}
+              href={withFilters("/companies", `offset=${Math.max(offset - limit, 0)}`)}
             >Prev</Link>
           )}
           {offset + limit < data.total && (
             <Link
               className="rounded-md border px-3 py-1 hover:bg-gray-50 dark:border-neutral-800 dark:hover:bg-neutral-800"
-              href={`/companies?${[
-                `offset=${offset + limit}`,
-                q && `q=${encodeURIComponent(q)}`,
-                state && `state=${encodeURIComponent(state)}`,
-                mca_category && `mca_category=${encodeURIComponent(mca_category)}`,
-                a_capital_min && `a_capital_min=${encodeURIComponent(a_capital_min)}`,
-                a_capital_max && `a_capital_max=${encodeURIComponent(a_capital_max)}`,
-                p_capital_min && `p_capital_min=${encodeURIComponent(p_capital_min)}`,
-                p_capital_max && `p_capital_max=${encodeURIComponent(p_capital_max)}`,
-                dor_from && `dor_from=${encodeURIComponent(dor_from)}`,
-                dor_to && `dor_to=${encodeURIComponent(dor_to)}`,
-                contacted && `contacted=${encodeURIComponent(contacted)}`,
-              ].filter(Boolean).join("&")}`}
+              href={withFilters("/companies", `offset=${offset + limit}`)}
             >Next</Link>
           )}
         </div>

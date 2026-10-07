@@ -33,8 +33,8 @@ def export_companies_csv(
         where_clauses.append("state = :state")
         params["state"] = state
     if city:
-        where_clauses.append("city = :city")
-        params["city"] = city
+        where_clauses.append("city ILIKE :city")
+        params["city"] = f"%{city.strip()}%"
     where_sql = "WHERE " + " AND ".join(where_clauses) if where_clauses else ""
 
     sql = text(
@@ -80,8 +80,8 @@ def export_companies_xlsx(
         where_clauses.append("state = :state")
         params["state"] = state
     if city:
-        where_clauses.append("city = :city")
-        params["city"] = city
+        where_clauses.append("city ILIKE :city")
+        params["city"] = f"%{city.strip()}%"
     where_sql = "WHERE " + " AND ".join(where_clauses) if where_clauses else ""
 
     sql = text(

@@ -27,6 +27,7 @@ export default function SelectCompaniesPage() {
   // Filter states
   const [searchQuery, setSearchQuery] = useState("");
   const [stateFilter, setStateFilter] = useState("");
+  const [cityFilter, setCityFilter] = useState("");
   const [mcaCategory, setMcaCategory] = useState("");
   const [aCapitalMin, setACapitalMin] = useState("");
   const [aCapitalMax, setACapitalMax] = useState("");
@@ -76,6 +77,7 @@ export default function SelectCompaniesPage() {
     });
     if (searchQuery) params.set("q", searchQuery);
     if (stateFilter) params.set("state", stateFilter);
+    if (cityFilter.trim()) params.set("city", cityFilter.trim());
     if (mcaCategory) params.set("mca_category", mcaCategory);
     if (aCapitalMin) params.set("a_capital_min", aCapitalMin);
     if (aCapitalMax) params.set("a_capital_max", aCapitalMax);
@@ -96,11 +98,12 @@ export default function SelectCompaniesPage() {
         console.error(err);
         setLoading(false);
       });
-  }, [searchQuery, stateFilter, mcaCategory, aCapitalMin, aCapitalMax, pCapitalMin, pCapitalMax, dorFrom, dorTo, contacted, page]);
+  }, [searchQuery, stateFilter, cityFilter, mcaCategory, aCapitalMin, aCapitalMax, pCapitalMin, pCapitalMax, dorFrom, dorTo, contacted, page]);
 
   const clearAllFilters = () => {
     setSearchQuery("");
     setStateFilter("");
+    setCityFilter("");
     setMcaCategory("");
     setACapitalMin("");
     setACapitalMax("");
@@ -115,6 +118,7 @@ export default function SelectCompaniesPage() {
   const activeFiltersCount = [
     searchQuery,
     stateFilter,
+    cityFilter,
     mcaCategory,
     aCapitalMin,
     aCapitalMax,
@@ -157,7 +161,7 @@ export default function SelectCompaniesPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-neutral-950 dark:to-neutral-900 p-8">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-[1800px] mx-auto">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <div>
@@ -250,6 +254,23 @@ export default function SelectCompaniesPage() {
           {showAdvanced && (
             <div className="mt-4 pt-4 border-t border-gray-200 dark:border-neutral-800">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">
+                    City
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Mumbai"
+                    title="Matches any city containing this text (case-insensitive)."
+                    value={cityFilter}
+                    onChange={(e) => {
+                      setCityFilter(e.target.value);
+                      setPage(0);
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-neutral-800 dark:text-white text-sm"
+                  />
+                </div>
+
                 {/* Activity Code */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">
@@ -422,6 +443,14 @@ export default function SelectCompaniesPage() {
                   <span className="inline-flex items-center gap-1 px-3 py-1 bg-indigo-100 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-200 text-xs rounded-full">
                     State: {stateFilter}
                     <button onClick={() => setStateFilter("")} className="hover:text-indigo-600">
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                )}
+                {cityFilter && (
+                  <span className="inline-flex items-center gap-1 px-3 py-1 bg-indigo-100 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-200 text-xs rounded-full">
+                    City: {cityFilter}
+                    <button onClick={() => setCityFilter("")} className="hover:text-indigo-600">
                       <X className="w-3 h-3" />
                     </button>
                   </span>
