@@ -1,7 +1,7 @@
 # VPS stack for bda.rioassetmanagement.net
 # Uses the existing external Postgres (no database container here).
-# Only the internal nginx is published, and only on 127.0.0.1:${BDA_HTTP_PORT};
-# the host's reverse proxy terminates TLS and forwards to it.
+# Only the internal nginx is published, on ${BDA_BIND_IP}:${BDA_HTTP_PORT} (never public);
+# the front proxy (alm_nginx) terminates TLS and forwards to it.
 #
 #   docker compose --env-file deploy/vps.env -f docker-compose.vps.yml up -d --build
 
@@ -73,8 +73,10 @@ services:
   proxy:
     image: nginx:1.27-alpine
     restart: unless-stopped
+    # BDA_BIND_IP=172.17.0.1 (docker0) lets a containerised front proxy reach this port
+    # without exposing it on the public interface.
     ports:
-      - "127.0.0.1:${BDA_HTTP_PORT:?Set BDA_HTTP_PORT in deploy/vps.env}:80"
+      - "${BDA_BIND_IP:-127.0.0.1}:${BDA_HTTP_PORT:?Set BDA_HTTP_PORT in deploy/vps.env}:80"
     volumes:
       - ./deploy/nginx.vps.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
