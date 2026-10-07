@@ -4,6 +4,7 @@ from sqlalchemy import text
 from src.models import database
 from src.schemas.common import Page
 from src.schemas.company import Company, CompanyDetail
+from src.cache import ttl_cached
 
 router = APIRouter(prefix="/api/companies", tags=["Companies"])
 
@@ -236,6 +237,7 @@ def get_company_detail(cin: str, db=Depends(database.get_db)):
 
 
 @router.get("/meta/states")
+@ttl_cached("meta_states")
 def get_states(db=Depends(database.get_db)):
     """Get all unique states from the database"""
     rows = db.execute(
@@ -255,6 +257,7 @@ def get_states(db=Depends(database.get_db)):
 
 
 @router.get("/meta/categories")
+@ttl_cached("meta_categories")
 def get_mca_categories(db=Depends(database.get_db)):
     """Get all unique MCA categories from the mca_codes table"""
     rows = db.execute(
@@ -265,6 +268,7 @@ def get_mca_categories(db=Depends(database.get_db)):
 
 # --- Statistics Endpoints ---
 @router.get("/stats/by-state")
+@ttl_cached("stats_by_state")
 def stats_by_state(db=Depends(database.get_db)):
     """Number of companies grouped by state."""
     rows = db.execute(
@@ -291,6 +295,7 @@ def stats_by_state(db=Depends(database.get_db)):
 
 
 @router.get("/stats/by-category")
+@ttl_cached("stats_by_category")
 def stats_by_category(db=Depends(database.get_db)):
     """Number of companies grouped by MCA category (via mca_codes)."""
     rows = db.execute(
@@ -312,6 +317,7 @@ def stats_by_category(db=Depends(database.get_db)):
 
 
 @router.get("/stats/by-paid-up-capital")
+@ttl_cached("stats_by_paid_up_capital")
 def stats_by_paid_up_capital(db=Depends(database.get_db)):
     """Number of companies grouped into paid-up capital buckets.
 

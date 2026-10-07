@@ -1,0 +1,96 @@
+# VPS stack for bda.rioassetmanagement.net
+# Uses the existing external Postgres (no database container here).
+# Only the internal nginx is published, and only on 127.0.0.1:${BDA_HTTP_PORT};
+# the host's reverse proxy terminates TLS and forwards to it.
+#
+#   docker compose --env-file deploy/vps.env -f docker-compose.vps.yml up -d --build
+
+name: bda
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  api:
+    build:
+      context: ./backend
+    image: bda-api:latest
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in deploy/vps.env}
+      CORS_ALLOW_ORIGINS: ${PUBLIC_ORIGIN:-https://bda.rioassetmanagement.net}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@rioassetmanagement.net}
+      WEB_CONCURRENCY: ${API_WORKERS:-2}
+      DB_POOL_SIZE: ${DB_POOL_SIZE:-5}
+      DB_MAX_OVERFLOW: ${DB_MAX_OVERFLOW:-5}
+      DB_STATEMENT_TIMEOUT_MS: ${DB_STATEMENT_TIMEOUT_MS:-60000}
+      DB_IDLE_IN_TX_TIMEOUT_MS: ${DB_IDLE_IN_TX_TIMEOUT_MS:-60000}
+      DB_APPLICATION_NAME: bda_analytics
+      STATS_CACHE_TTL_SECONDS: ${STATS_CACHE_TTL_SECONDS:-600}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks: [bda]
+    deploy:
+      resources:
+        limits:
+          cpus: "${API_CPUS:-1.5}"
+          memory: ${API_MEMORY:-1g}
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=4)"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+  web:
+    build:
+      context: ./frontend
+      dockerfile: ${FRONTEND_DOCKERFILE:-../deploy/frontend.Dockerfile}
+      args:
+        NEXT_PUBLIC_API_BASE: ${PUBLIC_ORIGIN:-https://bda.rioassetmanagement.net}
+        NEXT_PUBLIC_API_BASE_URL: ${PUBLIC_ORIGIN:-https://bda.rioassetmanagement.net}
+        NEXT_PUBLIC_API_URL: ${PUBLIC_ORIGIN:-https://bda.rioassetmanagement.net}
+    image: bda-web:latest
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      API_INTERNAL_BASE: http://api:8000
+      NODE_OPTIONS: --max-old-space-size=512
+    depends_on:
+      api:
+        condition: service_healthy
+    networks: [bda]
+    deploy:
+      resources:
+        limits:
+          cpus: "${WEB_CPUS:-1.0}"
+          memory: ${WEB_MEMORY:-768m}
+    logging: *default-logging
+
+  proxy:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${BDA_HTTP_PORT:?Set BDA_HTTP_PORT in deploy/vps.env}:80"
+    volumes:
+      - ./deploy/nginx.vps.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - api
+      - web
+    networks: [bda]
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 128m
+    logging: *default-logging
+
+networks:
+  bda:
+    name: bda_net

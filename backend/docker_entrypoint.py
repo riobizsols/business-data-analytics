@@ -144,9 +144,16 @@ def main():
     wait_for_database()
     apply_schema()
     ensure_admin()
+    workers = os.getenv("WEB_CONCURRENCY", "2")
     os.execvp(
         "uvicorn",
-        ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"],
+        [
+            "uvicorn", "src.main:app",
+            "--host", "0.0.0.0", "--port", "8000",
+            "--workers", workers,
+            "--proxy-headers", "--forwarded-allow-ips", "*",
+            "--timeout-keep-alive", "15",
+        ],
     )
 
 

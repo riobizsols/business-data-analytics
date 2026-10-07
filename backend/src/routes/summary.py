@@ -5,10 +5,12 @@ from fastapi import APIRouter, Depends, HTTPException
 from src.models import database
 from sqlalchemy import text
 from src.schemas.summary import AnalyticsSummary
+from src.cache import ttl_cached
 
 router = APIRouter()
 
 @router.get("/api/analytics/summary", tags=["Analytics"], response_model=AnalyticsSummary)
+@ttl_cached("analytics_summary")
 def analytics_summary(db=Depends(database.get_db)):
     logger = logging.getLogger("api")
     try:
