@@ -1,0 +1,35 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: bdata-postgres-1
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: bdata_db
+      POSTGRES_USER: bdata_user
+      POSTGRES_PASSWORD: bdata_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: bdata-redis-1
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - ./data/redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes: {}

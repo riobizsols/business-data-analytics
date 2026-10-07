@@ -1,0 +1,127 @@
+{
+  "status": "SUCCESS",
+  "timestamp": "2025-09-30T18:34:56.862644",
+  "database_info": {
+    "version": "PostgreSQL 15.14 (Debian 15.14-1.pgdg13+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+    "host": "localhost",
+    "port": 5432,
+    "database": "bdata_db",
+    "user": "bdata_user",
+    "source": "DATABASE_URL"
+  },
+  "tables": [
+    "company_det",
+    "data_records",
+    "data_schema",
+    "director_det",
+    "error_logs",
+    "processing_batches",
+    "schema_migrations",
+    "upload_jobs"
+  ],
+  "data_summary": {
+    "total_companies": 14314,
+    "total_directors": 37305
+  },
+  "sample_companies": [
+    {
+      "cin": "U93090MH2021PTC36208",
+      "name": "YASHASHREE MEP PRIVATE LIMITED",
+      "city": "Thane",
+      "state": "Maharashtra"
+    },
+    {
+      "cin": "U93090KA2021PTC14845",
+      "name": "HELLO SERVICES TECHNOLOGY PRIVATE LIMITED",
+      "city": "Dharwad",
+      "state": "Karnataka"
+    },
+    {
+      "cin": "U93000RJ2021PTC07533",
+      "name": "WHITE CARROT PRIVATE LIMITED",
+      "city": "JAIPUR",
+      "state": "Rajasthan"
+    },
+    {
+      "cin": "U93000MH2021PTC36214",
+      "name": "LIVWELL DIGITAL INSURANCE BROKERS PRIVATE LIMITED",
+      "city": "Mumbai",
+      "state": "Maharashtra"
+    },
+    {
+      "cin": "U93000MH2021PTC36207",
+      "name": "EZY WEDS PRIVATE LIMITED",
+      "city": "KOLHAPUR",
+      "state": "Maharashtra"
+    }
+  ],
+  "sample_directors": [
+    {
+      "din": "7400414",
+      "name": "DINESH DATTARAM MAHADIK",
+      "designation": "Additional Director"
+    },
+    {
+      "din": "8354725",
+      "name": "SUNIL RAMCHANDRA SHELAR",
+      "designation": "Director"
+    },
+    {
+      "din": "9204275",
+      "name": "SAURAV KUMAR",
+      "designation": "Director"
+    },
+    {
+      "din": "9204274",
+      "name": "RAMA DEVI",
+      "designation": "Director"
+    },
+    {
+      "din": "9203162",
+      "name": "RITA BAJORIA",
+      "designation": "Director"
+    }
+  ],
+  "state_distribution": [
+    {
+      "state": "Maharashtra",
+      "count": 3101
+    },
+    {
+      "state": "Delhi",
+      "count": 1462
+    },
+    {
+      "state": "Uttar Pradesh",
+      "count": 1382
+    },
+    {
+      "state": "Gujarat",
+      "count": 1048
+    },
+    {
+      "state": "Karnataka",
+      "count": 973
+    },
+    {
+      "state": "Telangana",
+      "count": 843
+    },
+    {
+      "state": "Tamil Nadu",
+      "count": 827
+    },
+    {
+      "state": "West Bengal",
+      "count": 731
+    },
+    {
+      "state": "Haryana",
+      "count": 645
+    },
+    {
+      "state": "Kerala",
+      "count": 517
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+fastapi>=0.110.0,<1
+uvicorn[standard]>=0.29.0,<1
+sqlalchemy>=2.0.0,<2.1
+psycopg2-binary>=2.9.9,<3
+python-dotenv>=1.0.1,<2
+bcrypt>=4.0.0,<6
+email-validator>=2.0.0,<3
+pandas>=2.2.2,<3  # optional, for XLSX export
+xlsxwriter>=3.2.0,<4  # optional, for XLSX export
