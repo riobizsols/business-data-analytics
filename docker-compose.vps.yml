@@ -49,13 +49,10 @@ services:
       start_period: 40s
 
   web:
+    # The frontend Dockerfile builds with an empty NEXT_PUBLIC_API_BASE, so the browser
+    # calls /api and /auth on the same domain and the proxy below routes them to the API.
     build:
       context: ./frontend
-      dockerfile: ${FRONTEND_DOCKERFILE:-../deploy/frontend.Dockerfile}
-      args:
-        NEXT_PUBLIC_API_BASE: ${PUBLIC_ORIGIN:-https://bda.rioassetmanagement.net}
-        NEXT_PUBLIC_API_BASE_URL: ${PUBLIC_ORIGIN:-https://bda.rioassetmanagement.net}
-        NEXT_PUBLIC_API_URL: ${PUBLIC_ORIGIN:-https://bda.rioassetmanagement.net}
     image: bda-web:latest
     restart: unless-stopped
     environment:
