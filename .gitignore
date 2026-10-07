@@ -1,0 +1,3 @@
+deploy/vps.env
+__pycache__/
+*.pyc
