@@ -22,9 +22,13 @@ the same domain. No CORS setup or rebuild is needed if the domain changes.
 - Dashboard counts and stats are cached for `STATS_CACHE_TTL_SECONDS` (600s).
 - CPU and memory caps on every container, and Docker logs are rotated (3 x 10 MB).
 
-## 1. DNS
+## 1. DNS and the tenant app
 
-Add an `A` record: `bda` -> the VPS public IP. Check with `dig +short bda.rioassetmanagement.net`.
+`*.rioassetmanagement.net` is a wildcard record, so no DNS change is needed.
+The tenant app also answers on wildcard subdomains. Nginx always prefers an exact
+`server_name bda.rioassetmanagement.net` over `*.rioassetmanagement.net` or a regex, so
+`bda` reaches this app. Add `bda` to the tenant app's reserved-subdomain list so no tenant
+can register it.
 
 ## 2. Code
 
@@ -35,11 +39,17 @@ git clone https://github.com/riobizsols/business-data-analytics.git /opt/bda
 
 ## 3. Config
 
-Copy `deploy/vps.env` from your machine (it is git-ignored):
+Create `deploy/vps.env` on the server from the example (it is git-ignored) and fill in
+`DATABASE_URL`:
 
 ```bash
-scp deploy/vps.env USER@VPS:/opt/bda/deploy/vps.env
+cp deploy/vps.env.example deploy/vps.env
+chmod 600 deploy/vps.env
+nano deploy/vps.env
 ```
+
+`DATABASE_URL=postgresql+psycopg2://USER:PASSWORD@HOST:5432/bdata_db?sslmode=disable`.
+In the password, URL-encode `@` `:` `/` `#` `%` (`@` -> `%40`) and write `$` as `$$`.
 
 Set `BDA_HTTP_PORT` to a free port and use the same port in `deploy/host-nginx-bda.conf`.
 Set `ADMIN_PASSWORD` only if the `users` table has no `admin` user yet.
